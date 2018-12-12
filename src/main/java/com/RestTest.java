@@ -40,13 +40,19 @@ class RestTest {
     Object rest(@RequestParam String seeyonUrl) {
         init();
         String post = client.get(seeyonUrl, String.class);//注意：这里的Map data 切勿传入null，及时data没有信息，也需Map data = new HashMap();
-        JSONObject jsonObj = (JSONObject) JSONObject.parse(post);
-        for (String key:jsonObj.keySet()) {
-            if(isInteger(jsonObj.get(key).toString())){
-                jsonObj.put(key,String.valueOf(jsonObj.get(key).toString()));
+        post=post.replaceAll("\r\n","");
+        JSONArray array = (JSONArray) JSONArray.parse(post);
+        for (Object obj:array) {
+            JSONObject jsonObj = (JSONObject)obj;
+            for (String key:jsonObj.keySet()) {
+                if(jsonObj.get(key)!=null){
+                    if(isInteger(jsonObj.get(key).toString())){
+                        jsonObj.put(key,String.valueOf(jsonObj.get(key).toString()));
+                    }
+                }
             }
         }
-        return jsonObj;
+        return array;
     }
 
     CTPRestClient client;
