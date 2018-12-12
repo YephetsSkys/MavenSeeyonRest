@@ -39,20 +39,35 @@ class RestTest {
     @RequestMapping(value = "/rest", produces = "application/json;charset=utf-8")
     Object rest(@RequestParam String seeyonUrl) {
         init();
+        Object object = new Object();
         String post = client.get(seeyonUrl, String.class);//注意：这里的Map data 切勿传入null，及时data没有信息，也需Map data = new HashMap();
         post=post.replaceAll("\r\n","");
-        JSONArray array = (JSONArray) JSONArray.parse(post);
-        for (Object obj:array) {
-            JSONObject jsonObj = (JSONObject)obj;
-            for (String key:jsonObj.keySet()) {
-                if(jsonObj.get(key)!=null){
-                    if(isInteger(jsonObj.get(key).toString())){
-                        jsonObj.put(key,String.valueOf(jsonObj.get(key).toString()));
+        if(isJsonArray(post)){
+            JSONArray array = (JSONArray) JSONArray.parse(post);
+            for (Object obj:array) {
+                JSONObject jsonObj = (JSONObject)obj;
+                for (String key:jsonObj.keySet()) {
+                    if(jsonObj.get(key)!=null){
+                        if(isInteger(jsonObj.get(key).toString())){
+                            jsonObj.put(key,String.valueOf(jsonObj.get(key).toString()));
+                        }
                     }
                 }
             }
+            object=array;
         }
-        return array;
+        if(isJsonObj(post)){
+            JSONObject obj = JSONObject.parseObject(post);
+                for (String key:obj.keySet()) {
+                    if(obj.get(key)!=null){
+                        if(isInteger(obj.get(key).toString())){
+                            obj.put(key,String.valueOf(obj.get(key).toString()));
+                        }
+                    }
+                }
+            object=obj;
+        }
+        return object;
     }
 
     CTPRestClient client;
@@ -82,5 +97,30 @@ class RestTest {
         Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
         return pattern.matcher(str).matches();
     }
-
+    /**
+     * 判断字符串是否可以转化为JSON数组
+     * @param content
+     * @return
+     */
+    public static boolean isJsonArray(String content) {
+        try {
+            JSONArray jsonStr = JSONArray.parseArray(content);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    /**
+     * 判断字符串是否可以转化为JSON对象
+     * @param content
+     * @return
+     */
+    public static boolean isJsonObj(String content) {
+        try {
+            JSONObject jsonStr = JSONObject.parseObject(content);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }
