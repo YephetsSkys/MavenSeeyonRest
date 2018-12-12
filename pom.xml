@@ -47,6 +47,7 @@
 				<artifactId>tomcat7-maven-plugin</artifactId>
 				<version>2.2</version>
 				<configuration>
+					<port>8090</port>
 					<warSourceDirectory>WebContent</warSourceDirectory>
 				</configuration>
 			</plugin>
