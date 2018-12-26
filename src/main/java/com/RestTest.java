@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.seeyon.client.CTPRestClient;
 import com.seeyon.client.CTPServiceClientManager;
-import com.seeyon.ctp.util.StringUtil;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -73,7 +72,7 @@ class RestTest {
     CTPRestClient client;
 
     void init() {
-        CTPServiceClientManager clientManager = CTPServiceClientManager.getInstance("http://10.6.189.79:80");
+        CTPServiceClientManager clientManager = CTPServiceClientManager.getInstance("http://172.16.7.211:80");
         // 取得REST动态客户机实例
         client = clientManager.getRestClient();
         client.authenticate("admin", "cjwsjy123");
