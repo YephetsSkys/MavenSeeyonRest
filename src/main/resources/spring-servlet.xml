@@ -37,6 +37,13 @@
 		</mvc:message-converters>
 	</mvc:annotation-driven>
 
+
+	<mvc:annotation-driven content-negotiation-manager="contentNegotiationManager"/>
+	<bean id="contentNegotiationManager" class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+		<property name="favorPathExtension" value="false" />
+	</bean>
+
+
 	<!-- 对静态资源文件的访问 -->
 	<mvc:resources mapping="/images/**" location="/resources/images/"
 		cache-period="31556926" />
