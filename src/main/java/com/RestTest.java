@@ -100,6 +100,7 @@ class RestTest {
 
 
     //公告内附件取法：http://localhost:8090/MavenSeeyonRest/rest?seeyonUrl=attachment/reference/7750969973988082761?type=0&pagNo=1&pageSize=100
+    //http://116.54.19.198:8083/MavenSeeyonRest/rest?seeyonUrl=
     @RequestMapping(value = "/rest", produces = "application/json;charset=utf-8")
     Object rest(@RequestParam String seeyonUrl) {
         init();
