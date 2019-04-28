@@ -4,10 +4,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.seeyon.client.CTPRestClient;
 import com.seeyon.client.CTPServiceClientManager;
-import org.springframework.web.accept.PathExtensionContentNegotiationStrategy;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.HttpURLConnection;
