@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.seeyon.client.CTPRestClient;
 import com.seeyon.client.CTPServiceClientManager;
 import org.springframework.web.bind.annotation.*;
+import util.HttpKit;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -18,6 +19,7 @@ import java.util.regex.Pattern;
 class RestTest {
 
     final static String HOST = "http://172.16.7.211:80";
+    final static String PATH = "/seeyon/rest/";
 
     @RequestMapping(value = "/download/{fi}/{fn:.*}", produces = "application/json;charset=utf-8")
     void download(HttpServletResponse response,
@@ -94,6 +96,35 @@ class RestTest {
             }
         }
         return array;
+    }
+
+    //localhost:8090/MavenSeeyonRest/rest/get/http?loginName=huanglaofu&seeyonUrl=inquiry/4871932671212472001/5962358151392674515/2/0
+    @RequestMapping(value = "/rest/get/http", produces = "application/json;charset=utf-8")
+    Object rest_get_http(@RequestParam String seeyonUrl,@RequestParam String loginName) {
+        String msg = null;
+        try {
+            String userToken = HttpKit.get(HOST+PATH+"token/admin/cjwsjy123?loginName="+loginName);
+            JSONObject userJson = JSONObject.parseObject(userToken);
+            String token = userJson.getString("id");
+            msg = HttpKit.get(HOST+PATH+seeyonUrl+"?token="+token);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return msg;
+    }
+
+    @RequestMapping(value = "/rest/post/http", produces = "application/json;charset=utf-8")
+    Object rest_post_http(@RequestParam String seeyonUrl,@RequestParam String loginName) {
+        String msg = null;
+        try {
+            String userToken = HttpKit.get(HOST+PATH+"token/admin/cjwsjy123?loginName="+loginName);
+            JSONObject userJson = JSONObject.parseObject(userToken);
+            String token = userJson.getString("id");
+            msg = HttpKit.post(HOST+PATH+seeyonUrl+"?token="+token);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return msg;
     }
 
 
