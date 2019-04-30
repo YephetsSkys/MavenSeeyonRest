@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.seeyon.client.CTPRestClient;
 import com.seeyon.client.CTPServiceClientManager;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import util.HttpKit;
 
@@ -12,6 +13,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 @CrossOrigin
@@ -78,53 +80,76 @@ class RestTest {
     }
 
     @RequestMapping(value = "/rest2", produces = "application/json;charset=utf-8")
-        //String rest(@RequestParam String seeyonUrl){
-    Object rest2() {
+    Object rest2(@RequestParam String seeyonUrl) {
         init();
-        String post = client.get("/news/newsType/unit/670869647114347", String.class);//注意：这里的Map data 切勿传入null，及时data没有信息，也需Map data = new HashMap();
-        post = post.replaceAll("\r\n", "");
-
-        JSONArray array = (JSONArray) JSONArray.parse(post);
-        for (Object obj : array) {
-            JSONObject jsonObj = (JSONObject) obj;
-            for (String key : jsonObj.keySet()) {
-                if (jsonObj.get(key) != null) {
-                    if (isInteger(jsonObj.get(key).toString())) {
-                        jsonObj.put(key, String.valueOf(jsonObj.get(key).toString()));
-                    }
-                }
-            }
+        Object object = new Object();
+        String msg = client.get(seeyonUrl, String.class);//注意：这里的Map data 切勿传入null，及时data没有信息，也需Map data = new HashMap();
+        msg = msg.replaceAll("\r\n", "");
+        if (isJsonArray(msg)) {
+            JSONArray array = (JSONArray) JSONArray.parse(msg);
+            array = valueToString(array);
+            object = array;
         }
-        return array;
+        if (isJsonObj(msg)) {
+            JSONObject obj = JSONObject.parseObject(msg);
+            obj = valueToString(obj);
+            object = obj;
+        }
+        return object;
     }
 
     //localhost:8090/MavenSeeyonRest/rest/get/http?loginName=huanglaofu&seeyonUrl=inquiry/4871932671212472001/5962358151392674515/2/0
     @RequestMapping(value = "/rest/get/http", produces = "application/json;charset=utf-8")
     Object rest_get_http(@RequestParam String seeyonUrl,@RequestParam String loginName) {
         String msg = null;
+        Object object = null;
         try {
             String userToken = HttpKit.get(HOST+PATH+"token/admin/cjwsjy123?loginName="+loginName);
             JSONObject userJson = JSONObject.parseObject(userToken);
             String token = userJson.getString("id");
             msg = HttpKit.get(HOST+PATH+seeyonUrl+"?token="+token);
+            msg = msg.replaceAll("\r\n", "");
+            if (isJsonArray(msg)) {
+                JSONArray array = (JSONArray) JSONArray.parse(msg);
+                array = valueToString(array);
+                object = array;
+            }
+            if (isJsonObj(msg)) {
+                System.out.println(msg);
+                JSONObject obj = JSONObject.parseObject(msg);
+                obj = valueToString(obj);
+                object = obj;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return msg;
+        return object;
     }
 
     @RequestMapping(value = "/rest/post/http", produces = "application/json;charset=utf-8")
     Object rest_post_http(@RequestParam String seeyonUrl,@RequestParam String loginName) {
         String msg = null;
+        Object object = null;
         try {
             String userToken = HttpKit.get(HOST+PATH+"token/admin/cjwsjy123?loginName="+loginName);
             JSONObject userJson = JSONObject.parseObject(userToken);
             String token = userJson.getString("id");
             msg = HttpKit.post(HOST+PATH+seeyonUrl+"?token="+token);
+            msg = msg.replaceAll("\r\n", "");
+            if (isJsonArray(msg)) {
+                JSONArray array = (JSONArray) JSONArray.parse(msg);
+                array = valueToString(array);
+                object = array;
+            }
+            if (isJsonObj(msg)) {
+                JSONObject obj = JSONObject.parseObject(msg);
+                obj = valueToString(obj);
+                object = obj;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return msg;
+        return object;
     }
 
 
@@ -164,6 +189,19 @@ class RestTest {
         return object;
     }
 
+    @RequestMapping(value = "/rest/post/submit", produces = "application/json;charset=utf-8")
+    Object rest_post_submit(
+            @RequestParam String seeyonUrl,
+            @RequestParam String loginName,
+            @RequestParam String param
+    ) {
+        param = param.replaceAll("\r\n", "");
+        init();
+        client.bindUser(loginName);
+        String post = client.post(seeyonUrl,param, String.class);//注意：这里的Map data 切勿传入null，及时data没有信息，也需Map data = new HashMap();
+        return post;
+    }
+
     CTPRestClient client;
 
     void init() {
@@ -173,11 +211,70 @@ class RestTest {
         client.authenticate("admin", "cjwsjy123");
     }
 
+    JSONObject valueToString(JSONObject obj){
+        for (String key : obj.keySet()) {
+            if(!StringUtils.isEmpty(obj.get(key))){
+                if (isInteger(obj.get(key).toString())) {
+                    obj.put(key, String.valueOf(obj.get(key).toString()));
+                }
+                else if(isJsonObj(obj.get(key).toString())){
+                    obj.put(key,valueToString(obj.getJSONObject(key)));
+                }
+                else if (isJsonArray(obj.get(key).toString())){
+                    obj.put(key,valueToString(obj.getJSONArray(key)));
+                }
+            }
+        }
+        return obj;
+    }
+
+    JSONArray valueToString(JSONArray array){
+        for (int i = 0; i < array.size() ; i++) {
+            Object obj = array.get(i);
+            if(!StringUtils.isEmpty(obj)){
+                if(isJsonArray(obj.toString())){
+                    array.set(i,valueToString(array.getJSONArray(i)));
+                }
+                if(isJsonObj(obj.toString())){
+                    array.set(i,valueToString(array.getJSONObject(i)));
+                }
+            }
+        }
+        return array;
+    }
+
+
+
+
+
     @GetMapping(value = "/getToken", produces = "application/json;charset=utf-8")
     Object getToken() {
         init();
         String post = client.get("token/admin/cjwsjy123", String.class, "text/plain");//注意：这里的Map data 切勿传入null，及时data没有信息，也需Map data = new HashMap();
         return post;
+    }
+
+    @GetMapping(value = "/user/{loginName}", produces = "application/json;charset=utf-8")
+    Object user(@PathVariable String loginName) {
+        Object object = null;
+        init();
+        String userToken = null;
+        try {
+            userToken = HttpKit.get(HOST+PATH+"token/admin/cjwsjy123?loginName="+loginName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        JSONObject obj = JSONObject.parseObject(userToken);
+        obj = obj.getJSONObject("bindingUser");
+        for (String key : obj.keySet()) {
+            if (obj.get(key) != null) {
+                if (isInteger(obj.get(key).toString())) {
+                    obj.put(key, String.valueOf(obj.get(key).toString()));
+                }
+            }
+        }
+        object = obj;
+        return object;
     }
 
     /*方法二：推荐，速度最快
@@ -199,6 +296,10 @@ class RestTest {
      */
     public static boolean isJsonArray(String content) {
         try {
+            if(content.equals("null"))
+            {
+                return false;
+            }
             JSONArray jsonStr = JSONArray.parseArray(content);
             return true;
         } catch (Exception e) {
@@ -214,6 +315,10 @@ class RestTest {
      */
     public static boolean isJsonObj(String content) {
         try {
+            if(content.equals("null"))
+            {
+                return false;
+            }
             JSONObject jsonStr = JSONObject.parseObject(content);
             return true;
         } catch (Exception e) {
